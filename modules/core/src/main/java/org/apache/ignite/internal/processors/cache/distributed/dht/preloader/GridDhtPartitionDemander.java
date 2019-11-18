@@ -251,8 +251,7 @@ public class GridDhtPartitionDemander {
      * reassing exchange occurs, see {@link RebalanceReassignExchangeTask} for details.
      */
     private boolean topologyChanged(RebalanceFuture fut) {
-        return !ctx.exchange().rebalanceTopologyVersion().equals(fut.topVer) ||
-            fut != rebalanceFut; // Same topology, but dummy exchange forced because of missing partitions.
+        return fut != rebalanceFut; // Same topology, but dummy exchange forced because of missing partitions.
     }
 
     /**
@@ -272,6 +271,17 @@ public class GridDhtPartitionDemander {
     }
 
     /**
+     * Cancels rebalance before start new one.
+     * This method will invoked when new rebalance is planing for stabilization of local partitions' state.
+     */
+    public void cancelRebalanceIfNeeded() {
+        final RebalanceFuture oldFut = rebalanceFut;
+
+        if (!oldFut.isInitial() && !oldFut.isDone())
+            oldFut.cancel();
+    }
+
+    /**
      * This method initiates new rebalance process from given {@code assignments} by creating new rebalance
      * future based on them. Cancels previous rebalance future and sends rebalance started event.
      * In case of delayed rebalance method schedules the new one with configured delay based on {@code lastExchangeFut}.
@@ -288,7 +298,8 @@ public class GridDhtPartitionDemander {
         boolean force,
         long rebalanceId,
         final Runnable next,
-        @Nullable final GridCompoundFuture<Boolean, Boolean> forcedRebFut
+        @Nullable final GridCompoundFuture<Boolean, Boolean> forcedRebFut,
+        GridFutureAdapter commonRebalanceFuture
     ) {
         if (log.isDebugEnabled())
             log.debug("Adding partition assignments: " + assignments);
@@ -302,13 +313,14 @@ public class GridDhtPartitionDemander {
 
             final RebalanceFuture fut = new RebalanceFuture(grp, assignments, log, rebalanceId);
 
-            if (!grp.localWalEnabled())
+            if (!grp.localWalEnabled()) {
                 fut.listen(new IgniteInClosureX<IgniteInternalFuture<Boolean>>() {
                     @Override public void applyx(IgniteInternalFuture<Boolean> future) throws IgniteCheckedException {
                         if (future.get())
-                            ctx.walState().onGroupRebalanceFinished(grp.groupId(), assignments.topologyVersion());
+                            ctx.walState().onGroupRebalanceFinished(grp.groupId());
                     }
                 });
+            }
 
             if (!oldFut.isInitial())
                 oldFut.cancel();
@@ -347,8 +359,10 @@ public class GridDhtPartitionDemander {
             fut.sendRebalanceStartedEvent();
 
             if (assignments.cancelled()) { // Pending exchange.
-                if (log.isDebugEnabled())
-                    log.debug("Rebalancing skipped due to cancelled assignments.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Rebalancing skipped due to cancelled assignments [grp=" + grp.cacheOrGroupName() +
+                        ", mode=" + grp.config().getRebalanceMode() + ", topVer=" + assignments.topologyVersion() + ']');
+                }
 
                 fut.onDone(false);
 
@@ -358,14 +372,18 @@ public class GridDhtPartitionDemander {
             }
 
             if (assignments.isEmpty()) { // Nothing to rebalance.
-                if (log.isDebugEnabled())
-                    log.debug("Rebalancing skipped due to empty assignments.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Rebalancing skipped due to empty assignments [grp=" + grp.cacheOrGroupName() +
+                        ", mode=" + grp.config().getRebalanceMode() + ", topVer=" + assignments.topologyVersion() + ']');
+                }
 
                 fut.onDone(true);
 
                 ((GridFutureAdapter)grp.preloader().syncFuture()).onDone();
 
                 fut.sendRebalanceFinishedEvent();
+
+                ctx.exchange().scheduleResendPartitions();
 
                 return null;
             }
@@ -375,8 +393,10 @@ public class GridDhtPartitionDemander {
                     try {
                         printRebalanceStatistics();
 
-                        if (f.get() && nonNull(next))
+                        if (nonNull(next))
                             next.run();
+                        else
+                            commonRebalanceFuture.onDone();
                     }
                     catch (IgniteCheckedException e) {
                         if (log.isDebugEnabled())
@@ -663,6 +683,13 @@ public class GridDhtPartitionDemander {
         fut.cancelLock.readLock().lock();
 
         try {
+            if (fut.isDone()) {
+                if (log.isDebugEnabled())
+                    log.debug("Supply message ignored (rebalance completed) [" + demandRoutineInfo(nodeId, supplyMsg) + "]");
+
+                return;
+            }
+
             ClusterNode node = ctx.node(nodeId);
 
             if (node == null) {
