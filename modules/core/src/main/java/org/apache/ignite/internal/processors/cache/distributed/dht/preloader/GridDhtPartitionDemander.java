@@ -246,15 +246,6 @@ public class GridDhtPartitionDemander {
     }
 
     /**
-     * @param fut Future.
-     * @return {@code True} if rebalance topology version changed by exchange thread or force
-     * reassing exchange occurs, see {@link RebalanceReassignExchangeTask} for details.
-     */
-    private boolean topologyChanged(RebalanceFuture fut) {
-        return fut != rebalanceFut; // Same topology, but dummy exchange forced because of missing partitions.
-    }
-
-    /**
      * Sets last exchange future.
      *
      * @param lastFut Last future to set.
@@ -460,8 +451,9 @@ public class GridDhtPartitionDemander {
     private void requestPartitions(final RebalanceFuture fut, GridDhtPreloaderAssignments assignments) {
         assert fut != null;
 
-        if (topologyChanged(fut)) {
-            fut.cancel();
+        if (fut.isDone()) {
+            assert !fut.result() : "Rebalance future was done, but partitions never requested grp = "
+                + grp.cacheOrGroupName();
 
             return;
         }
@@ -651,7 +643,7 @@ public class GridDhtPartitionDemander {
     public void registerSupplyMessage(final GridDhtPartitionSupplyMessage supplyMsg, final Runnable r) {
         final RebalanceFuture fut = rebalanceFut;
 
-        if (!topologyChanged(fut) && fut.isActual(supplyMsg.rebalanceId())) {
+        if (fut.isActual(supplyMsg.rebalanceId())) {
             for (Integer p : supplyMsg.infos().keySet())
                 fut.queued.get(p).increment();
 
@@ -700,7 +692,7 @@ public class GridDhtPartitionDemander {
             }
 
             // Topology already changed (for the future that supply message based on).
-            if (topologyChanged(fut) || !fut.isActual(supplyMsg.rebalanceId())) {
+            if (!fut.isActual(supplyMsg.rebalanceId())) {
                 if (log.isDebugEnabled())
                     log.debug("Supply message ignored (topology changed) [" + demandRoutineInfo(nodeId, supplyMsg) + "]");
 
@@ -853,7 +845,7 @@ public class GridDhtPartitionDemander {
 
                 d.topic(rebalanceTopic);
 
-                if (!topologyChanged(fut) && !fut.isDone()) {
+                if (!fut.isDone()) {
                     // Send demand message.
                     try {
                         ctx.io().sendOrderedMessage(node, rebalanceTopic,
@@ -871,7 +863,7 @@ public class GridDhtPartitionDemander {
                 else {
                     if (log.isDebugEnabled())
                         log.debug("Will not request next demand message [" + demandRoutineInfo(nodeId, supplyMsg) +
-                            ", topChanged=" + topologyChanged(fut) + ", rebalanceFuture=" + fut + "]");
+                            ", rebalanceFuture=" + fut + "]");
                 }
             }
             catch (IgniteSpiException | IgniteCheckedException e) {
@@ -898,7 +890,7 @@ public class GridDhtPartitionDemander {
         final UUID nodeId,
         final GridDhtPartitionSupplyMessage supplyMsg
     ) {
-        if (topologyChanged(fut) || !fut.isActual(supplyMsg.rebalanceId()))
+        if (fut.isDone() || !fut.isActual(supplyMsg.rebalanceId()))
             return;
 
         int id = part.id();
@@ -1372,6 +1364,16 @@ public class GridDhtPartitionDemander {
         }
 
         /**
+         * Checks that node (identify by <code>nodeId</code>) will have supply several partitions or not.
+         *
+         * @param nodId Node id, witch will be checked.
+         * @return True if node with specified id is supplier.
+         */
+        public synchronized boolean hasSupplier(UUID nodId) {
+            return remaining.keySet().contains(nodId);
+        }
+
+        /**
          * Cancels this future.
          *
          * @return {@code True}.
@@ -1409,37 +1411,33 @@ public class GridDhtPartitionDemander {
         /**
          * @param nodeId Node id.
          */
-        private void cancel(UUID nodeId) {
-            synchronized (this) {
-                if (isDone())
-                    return;
+        private synchronized void cancel(UUID nodeId) {
+            if (isDone())
+                return;
 
-                U.log(log, ("Cancelled rebalancing [grp=" + grp.cacheOrGroupName() +
-                    ", supplier=" + nodeId + ", topVer=" + topologyVersion() + ']'));
+            U.log(log, ("Cancelled rebalancing [grp=" + grp.cacheOrGroupName() +
+                ", supplier=" + nodeId + ", topVer=" + topologyVersion() + ']'));
 
-                cleanupRemoteContexts(nodeId);
+            cleanupRemoteContexts(nodeId);
 
-                remaining.remove(nodeId);
+            remaining.remove(nodeId);
 
-                onDone(false); // Finishing rebalance future as non completed.
+            onDone(false); // Finishing rebalance future as non completed.
 
-                checkIsDone(); // But will finish syncFuture only when other nodes are preloaded or rebalancing cancelled.
-            }
+            checkIsDone(); // But will finish syncFuture only when other nodes are preloaded or rebalancing cancelled.
         }
 
         /**
          * @param nodeId Node id.
          * @param p Partition id.
          */
-        private void partitionMissed(UUID nodeId, int p) {
-            synchronized (this) {
-                if (isDone())
-                    return;
+        private synchronized void partitionMissed(UUID nodeId, int p) {
+            if (isDone())
+                return;
 
-                missed.computeIfAbsent(nodeId, k -> new HashSet<>());
+            missed.computeIfAbsent(nodeId, k -> new HashSet<>());
 
-                missed.get(nodeId).add(p);
-            }
+            missed.get(nodeId).add(p);
         }
 
         /**
@@ -1478,41 +1476,39 @@ public class GridDhtPartitionDemander {
          * @param nodeId Node id.
          * @param p Partition number.
          */
-        private void partitionDone(UUID nodeId, int p, boolean updateState) {
-            synchronized (this) {
-                if (updateState && grp.localWalEnabled())
-                    grp.topology().own(grp.topology().localPartition(p));
+        private synchronized void partitionDone(UUID nodeId, int p, boolean updateState) {
+            if (updateState && grp.localWalEnabled())
+                grp.topology().own(grp.topology().localPartition(p));
 
-                if (isDone())
-                    return;
+            if (isDone())
+                return;
 
-                if (grp.eventRecordable(EVT_CACHE_REBALANCE_PART_LOADED))
-                    rebalanceEvent(p, EVT_CACHE_REBALANCE_PART_LOADED, exchId.discoveryEvent());
+            if (grp.eventRecordable(EVT_CACHE_REBALANCE_PART_LOADED))
+                rebalanceEvent(p, EVT_CACHE_REBALANCE_PART_LOADED, exchId.discoveryEvent());
 
-                IgniteDhtDemandedPartitionsMap parts = remaining.get(nodeId);
+            IgniteDhtDemandedPartitionsMap parts = remaining.get(nodeId);
 
-                assert parts != null : "Remaining not found [grp=" + grp.cacheOrGroupName() + ", fromNode=" + nodeId +
-                    ", part=" + p + "]";
+            assert parts != null : "Remaining not found [grp=" + grp.cacheOrGroupName() + ", fromNode=" + nodeId +
+                ", part=" + p + "]";
 
-                boolean rmvd = parts.remove(p);
+            boolean rmvd = parts.remove(p);
 
-                assert rmvd : "Partition already done [grp=" + grp.cacheOrGroupName() + ", fromNode=" + nodeId +
-                    ", part=" + p + ", left=" + parts + "]";
+            assert rmvd : "Partition already done [grp=" + grp.cacheOrGroupName() + ", fromNode=" + nodeId +
+                ", part=" + p + ", left=" + parts + "]";
 
-                if (parts.isEmpty()) {
-                    int remainingRoutines = remaining.size() - 1;
+            if (parts.isEmpty()) {
+                int remainingRoutines = remaining.size() - 1;
 
-                    U.log(log, "Completed " + ((remainingRoutines == 0 ? "(final) " : "") +
-                            "rebalancing [grp=" + grp.cacheOrGroupName() +
-                            ", supplier=" + nodeId +
-                            ", topVer=" + topologyVersion() +
-                            ", progress=" + (routines - remainingRoutines) + "/" + routines + "]"));
+                U.log(log, "Completed " + ((remainingRoutines == 0 ? "(final) " : "") +
+                    "rebalancing [grp=" + grp.cacheOrGroupName() +
+                    ", supplier=" + nodeId +
+                    ", topVer=" + topologyVersion() +
+                    ", progress=" + (routines - remainingRoutines) + "/" + routines + "]"));
 
-                    remaining.remove(nodeId);
-                }
-
-                checkIsDone();
+                remaining.remove(nodeId);
             }
+
+            checkIsDone();
         }
 
         /**

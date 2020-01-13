@@ -48,7 +48,6 @@ import org.apache.ignite.internal.util.future.GridFinishedFuture;
 import org.apache.ignite.internal.util.future.GridFutureAdapter;
 import org.apache.ignite.internal.util.lang.GridPlainRunnable;
 import org.apache.ignite.internal.util.typedef.CI1;
-import org.apache.ignite.internal.util.typedef.internal.CU;
 import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.lang.IgnitePredicate;
 import org.jetbrains.annotations.NotNull;
@@ -177,7 +176,7 @@ public class GridDhtPreloader extends GridCachePreloaderAdapter {
         if (exchFut.localJoinExchange())
             return true; // Required, can have outdated updSeq partition counter if node reconnects.
 
-        if (isBltNodeLeft(exchFut))
+        if (exchFut.isGroupHasOutdatedCouters(grp.groupId()))
             return true;
 
         RebalanceFuture rebalanceFuture = (RebalanceFuture)rebalanceFuture();
@@ -188,7 +187,7 @@ public class GridDhtPreloader extends GridCachePreloaderAdapter {
         if (rebalanceFuture.isDone() && !rebalanceFuture.result())
             return true; // Required, previous rebalance cancelled.
 
-        if (exchFut.isGroupHasOutdatedCouters(grp.groupId()))
+        if (isSupplierNodeLeft(exchFut, rebalanceFuture))
             return true;
 
         AffinityTopologyVersion rebTopVer = rebalanceFuture.topologyVersion();
@@ -213,17 +212,17 @@ public class GridDhtPreloader extends GridCachePreloaderAdapter {
     }
 
     /**
-     * Checks, if is exchange connected with the node exit from the baseline.
+     * Checks, if is exchange connected with a supplier node left topology.
      *
      * @param exchFut Exchange future.
-     * @return True means baseline node left cluster, false otherwise.
+     * @param rebFut Rebalamce future.
+     * @return True means supplier node left cluster, false otherwise.
      */
-    private boolean isBltNodeLeft(GridDhtPartitionsExchangeFuture exchFut) {
+    private boolean isSupplierNodeLeft(GridDhtPartitionsExchangeFuture exchFut, RebalanceFuture rebFut) {
         return (exchFut.firstEvent().type() == EVT_NODE_LEFT
             || exchFut.firstEvent().type() == EVT_NODE_FAILED)
             && !exchFut.firstEvent().eventNode().isClient()
-            && (!grp.persistenceEnabled()
-            || CU.baselineNode(exchFut.firstEvent().eventNode(), ctx.kernalContext().state().clusterState()));
+            && rebFut.hasSupplier(exchFut.firstEvent().eventNode().id());
     }
 
     /**
