@@ -25,6 +25,8 @@ import org.junit.After;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 /** */
 public class IgniteUtilsWorkDirectoryTest {
@@ -130,13 +132,19 @@ public class IgniteUtilsWorkDirectoryTest {
     @Test
     public void workDirCannotWriteTest() {
         String strDir = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
-
-        File dir = new File(strDir);
-        X.println("exists? " + dir.exists());
-        if (dir.exists()) {
-            boolean delete = deleteDirectory(dir);
-            X.println(Boolean.toString(delete));
+        File dir = null;
+        try {
+            dir = Files.createTempDirectory("qqq").toFile();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        strDir = dir.getAbsolutePath();
+//        File dir = new File(strDir);
+//        X.println("exists? " + dir.exists());
+//        if (dir.exists()) {
+//            boolean delete = deleteDirectory(dir);
+//            X.println("deleted? " + delete);
+//        }
 
         dir.setWritable(false);
         dir.setReadOnly();
@@ -148,7 +156,7 @@ public class IgniteUtilsWorkDirectoryTest {
 
         assert dir.exists() : "Work directory was not created";
         try {
-            Thread.sleep(15000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
