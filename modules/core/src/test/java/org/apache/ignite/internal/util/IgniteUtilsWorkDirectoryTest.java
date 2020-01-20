@@ -16,6 +16,7 @@
 
 package org.apache.ignite.internal.util;
 
+import org.apache.commons.io.FileSystemUtils;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.IgniteSystemProperties;
 import org.apache.ignite.internal.util.typedef.X;
@@ -131,8 +132,9 @@ public class IgniteUtilsWorkDirectoryTest {
         String strDir = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
 
         File dir = new File(strDir);
+        X.println("exists? " + dir.exists());
         if (dir.exists()) {
-            boolean delete = dir.delete();
+            boolean delete = deleteDirectory(dir);
             X.println(Boolean.toString(delete));
         }
 
@@ -156,6 +158,16 @@ public class IgniteUtilsWorkDirectoryTest {
         X.println("333 " + dir.canWrite());
 
         genericPathExceptionTest(strDir, "Cannot write to work directory: " + strDir);
+    }
+
+    static boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
     }
 
     /** */
