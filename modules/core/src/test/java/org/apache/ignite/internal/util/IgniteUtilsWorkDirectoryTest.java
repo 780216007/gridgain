@@ -145,8 +145,9 @@ public class IgniteUtilsWorkDirectoryTest {
         String strDir = String.join(File.separator, TEMP_DIRECTORY, "CannotWriteTestDirectory");
         File dir = new File(strDir);
         dir.mkdirs();
-        dir.setWritable(false, false);
+        boolean permission = dir.setWritable(false, false);
 
+        assert permission : "No permission";
         assert dir.exists() : "Work directory was not created";
         try {
             Thread.sleep(10000);
