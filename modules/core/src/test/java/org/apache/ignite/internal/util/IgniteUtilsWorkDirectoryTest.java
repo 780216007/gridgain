@@ -129,15 +129,28 @@ public class IgniteUtilsWorkDirectoryTest {
     @Test
     public void workDirCannotWriteTest() {
         String strDir = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
+
         File dir = new File(strDir);
-        dir.mkdirs();
+        if (dir.exists()) {
+            boolean delete = dir.delete();
+            X.println(Boolean.toString(delete));
+        }
+
         dir.setWritable(false);
+        dir.setReadOnly();
+
+        dir.mkdirs();
+
+        dir.setWritable(false);
+        dir.setReadOnly();
+
         assert dir.exists() : "Work directory was not created";
         try {
             Thread.sleep(15000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
         X.println("111 " + dir.isAbsolute());
         X.println("222 " + dir.canRead());
         X.println("333 " + dir.canWrite());
