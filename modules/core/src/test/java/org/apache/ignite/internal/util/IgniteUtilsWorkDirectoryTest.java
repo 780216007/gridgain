@@ -157,11 +157,12 @@ public class IgniteUtilsWorkDirectoryTest {
         try {
             Runtime.getRuntime().exec("chmod 444 " + strDir);
         } catch (IOException e) {
+            X.println("chmod failed");
             e.printStackTrace();
         }
         assert dir.exists() : "Work directory was not created";
         try {
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
