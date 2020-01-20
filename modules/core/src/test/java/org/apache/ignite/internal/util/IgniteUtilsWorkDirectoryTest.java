@@ -146,13 +146,13 @@ public class IgniteUtilsWorkDirectoryTest {
 //            X.println("deleted? " + delete);
 //        }
 
-        dir.setWritable(false);
-        dir.setReadOnly();
+        dir.setWritable(false, false);
+//        dir.setReadOnly();
 
         dir.mkdirs();
 
-        dir.setWritable(false);
-        dir.setReadOnly();
+        dir.setWritable(false, false);
+//        dir.setReadOnly();
 
         assert dir.exists() : "Work directory was not created";
         try {
