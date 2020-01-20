@@ -18,6 +18,7 @@ package org.apache.ignite.internal.util;
 
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.IgniteSystemProperties;
+import org.apache.ignite.internal.util.typedef.X;
 import org.apache.ignite.internal.util.typedef.internal.U;
 import org.junit.After;
 import org.junit.Test;
@@ -132,6 +133,9 @@ public class IgniteUtilsWorkDirectoryTest {
         dir.mkdirs();
         dir.setWritable(false);
         assert dir.exists() : "Work directory was not created";
+        X.println("1 " + dir.isAbsolute());
+        X.println("2 " + dir.canRead());
+        X.println("3 " + dir.canWrite());
 
         genericPathExceptionTest(strDir, "Cannot write to work directory: " + strDir);
     }
