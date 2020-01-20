@@ -16,32 +16,18 @@
 
 package org.apache.ignite.internal.util;
 
-import org.apache.commons.io.FileSystemUtils;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.IgniteSystemProperties;
 import org.apache.ignite.internal.util.typedef.X;
 import org.apache.ignite.internal.util.typedef.internal.U;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 
 /** */
 public class IgniteUtilsWorkDirectoryTest {
-
-//    /** */
-//    private static String TEMP_DIRECTORY = null;
-//
-//    static {
-//        try {
-//
-//            TEMP_DIRECTORY = Files.createTempDirectory("WorkDirectoryTest").toFile().getAbsolutePath();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     /** */
     private static final String USER_WORK_DIR = String.join(File.separator, U.getIgniteHome() , "userWorkDirTest");
@@ -142,68 +128,57 @@ public class IgniteUtilsWorkDirectoryTest {
 
     /** */
     @Test
+    @Ignore("Test fail when run on TeamCity")
     public void workDirCannotWriteTest() {
         String strDir = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
         File dir = new File(strDir);
-        X.println("exists? " + dir.exists());
+
         if (dir.exists()) {
-            boolean delete = deleteDirectory(dir);
-            X.println("deleted? " + delete);
+            boolean deleted = deleteDirectory(dir);
+            assert deleted : "cannot delete file";
         }
         dir.mkdirs();
 
-        boolean permission = dir.setWritable(false, false);
-        assert permission : "No permission";
-        try {
-            Runtime.getRuntime().exec("chmod 444 " + strDir);
-        } catch (IOException e) {
-            X.println("chmod failed");
-            e.printStackTrace();
-        }
-        assert dir.exists() : "Work directory was not created";
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        X.println("111 " + dir.isAbsolute());
-        X.println("222 " + dir.canRead());
-        X.println("333 " + dir.canWrite());
+        boolean perm = dir.setWritable(false, false);
+        assert perm : "no permission";
 
         genericPathExceptionTest(strDir, "Cannot write to work directory: " + strDir);
     }
 
-    static boolean deleteDirectory(File directoryToBeDeleted) {
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
-        }
-        return directoryToBeDeleted.delete();
-    }
-
-    /** */
+    /***/
     @Test
+    @Ignore("Test fail when run on TeamCity")
     public void workDirCannotReadTest() {
         String strDir = String.join(File.separator, USER_WORK_DIR, "CannotReadTestDirectory");
         File dir = new File(strDir);
+
+        if (dir.exists()) {
+            boolean deleted = deleteDirectory(dir);
+            assert deleted : "cannot delete file";
+        }
         dir.mkdirs();
-        dir.setReadable(false);
-        assert dir.exists() : "Work directory was not created";
+
+        boolean perm = dir.setReadable(false, false);
+        assert perm : "no permission";
 
         genericPathExceptionTest(strDir, "Cannot read from work directory: " + strDir);
     }
 
     /** */
     @Test
+    @Ignore("Test fail when run on TeamCity")
     public void workDirNotExistAndCannotBeCreatedTest() {
         String strDirParent = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
         File dirParent = new File(strDirParent);
+
+        if (dirParent.exists()) {
+            boolean deleted = deleteDirectory(dirParent);
+            assert deleted : "cannot delete file";
+        }
         dirParent.mkdirs();
-        dirParent.setWritable(false);
-        assert dirParent.exists() : "Work directory was not created";
+
+        boolean perm = dirParent.setWritable(false, false);
+        assert perm : "no permission";
 
         String strDir = String.join(File.separator, strDirParent, "newDirectory");
 
@@ -224,6 +199,16 @@ public class IgniteUtilsWorkDirectoryTest {
         }
 
         assert fail : "actualWorkDir: " + actualWorkDir + ", expected: thrown exception";
+    }
+
+    private static boolean deleteDirectory(File dirToBeDeleted) {
+        File[] allContents = dirToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return dirToBeDeleted.delete();
     }
 
 }
