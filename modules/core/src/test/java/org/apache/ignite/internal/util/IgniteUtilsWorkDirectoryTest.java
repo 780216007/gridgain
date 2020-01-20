@@ -133,9 +133,14 @@ public class IgniteUtilsWorkDirectoryTest {
         dir.mkdirs();
         dir.setWritable(false);
         assert dir.exists() : "Work directory was not created";
-        X.println("1 " + dir.isAbsolute());
-        X.println("2 " + dir.canRead());
-        X.println("3 " + dir.canWrite());
+        try {
+            Thread.sleep(15000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        X.println("111 " + dir.isAbsolute());
+        X.println("222 " + dir.canRead());
+        X.println("333 " + dir.canWrite());
 
         genericPathExceptionTest(strDir, "Cannot write to work directory: " + strDir);
     }
