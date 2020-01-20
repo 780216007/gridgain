@@ -87,6 +87,7 @@ public class IgniteUtilsWorkDirectoryTest {
         genericWorkDirectoryTest(true, true, true,
                 USER_WORK_DIR);
     }
+
     /** */
     private void genericWorkDirectoryTest(boolean userWorkDirFlag, boolean userIgniteHomeFlag,
                                           boolean userDirPropFlag, String expWorkDir) {
@@ -130,6 +131,7 @@ public class IgniteUtilsWorkDirectoryTest {
         File dir = new File(strDir);
         dir.mkdirs();
         dir.setWritable(false);
+        assert dir.exists() : "Work directory was not created";
 
         genericPathExceptionTest(strDir, "Cannot write to work directory: " + strDir);
     }
@@ -141,6 +143,7 @@ public class IgniteUtilsWorkDirectoryTest {
         File dir = new File(strDir);
         dir.mkdirs();
         dir.setReadable(false);
+        assert dir.exists() : "Work directory was not created";
 
         genericPathExceptionTest(strDir, "Cannot read from work directory: " + strDir);
     }
@@ -152,6 +155,7 @@ public class IgniteUtilsWorkDirectoryTest {
         File dirParent = new File(strDirParent);
         dirParent.mkdirs();
         dirParent.setWritable(false);
+        assert dirParent.exists() : "Work directory was not created";
 
         String strDir = String.join(File.separator, strDirParent, "newDirectory");
 
