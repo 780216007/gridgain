@@ -31,16 +31,17 @@ import java.nio.file.Files;
 /** */
 public class IgniteUtilsWorkDirectoryTest {
 
-    /** */
-    private static String TEMP_DIRECTORY = null;
-
-    static {
-        try {
-            TEMP_DIRECTORY = Files.createTempDirectory("WorkDirectoryTest").toFile().getAbsolutePath();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    /** */
+//    private static String TEMP_DIRECTORY = null;
+//
+//    static {
+//        try {
+//
+//            TEMP_DIRECTORY = Files.createTempDirectory("WorkDirectoryTest").toFile().getAbsolutePath();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     /** */
     private static final String USER_WORK_DIR = String.join(File.separator, U.getIgniteHome() , "userWorkDirTest");
@@ -142,12 +143,22 @@ public class IgniteUtilsWorkDirectoryTest {
     /** */
     @Test
     public void workDirCannotWriteTest() {
-        String strDir = String.join(File.separator, TEMP_DIRECTORY, "CannotWriteTestDirectory");
+        String strDir = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
         File dir = new File(strDir);
+        X.println("exists? " + dir.exists());
+        if (dir.exists()) {
+            boolean delete = deleteDirectory(dir);
+            X.println("deleted? " + delete);
+        }
         dir.mkdirs();
-        boolean permission = dir.setWritable(false, false);
 
+        boolean permission = dir.setWritable(false, false);
         assert permission : "No permission";
+        try {
+            Runtime.getRuntime().exec("chmod 444 " + strDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         assert dir.exists() : "Work directory was not created";
         try {
             Thread.sleep(10000);
@@ -162,10 +173,20 @@ public class IgniteUtilsWorkDirectoryTest {
         genericPathExceptionTest(strDir, "Cannot write to work directory: " + strDir);
     }
 
+    static boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
+
     /** */
     @Test
     public void workDirCannotReadTest() {
-        String strDir = String.join(File.separator, TEMP_DIRECTORY, "CannotReadTestDirectory");
+        String strDir = String.join(File.separator, USER_WORK_DIR, "CannotReadTestDirectory");
         File dir = new File(strDir);
         dir.mkdirs();
         dir.setReadable(false);
@@ -177,7 +198,7 @@ public class IgniteUtilsWorkDirectoryTest {
     /** */
     @Test
     public void workDirNotExistAndCannotBeCreatedTest() {
-        String strDirParent = String.join(File.separator, TEMP_DIRECTORY, "CannotWriteTestDirectory");
+        String strDirParent = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
         File dirParent = new File(strDirParent);
         dirParent.mkdirs();
         dirParent.setWritable(false);
