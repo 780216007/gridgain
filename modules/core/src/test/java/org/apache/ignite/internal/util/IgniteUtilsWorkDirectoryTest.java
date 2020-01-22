@@ -146,6 +146,9 @@ public class IgniteUtilsWorkDirectoryTest {
         System.out.println("output of command: chmod 444");
         execiteCommand("chmod 444 " + strDir);
 
+        System.out.println("output of command: chattr +i");
+        execiteCommand("chattr +i " + strDir);
+
 //        File dir1 = new File(String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory", "newDir"));
 //        dir1.mkdirs();
 
