@@ -62,73 +62,73 @@ public class IgniteUtilsWorkDirectoryTest {
             System.setProperty("user.dir", dfltUserDir);
     }
 
-    /** */
-    @Test
-    public void testWorkDirectory1() {
-        genericWorkDirectoryTest(true, false, false,
-                USER_WORK_DIR);
-    }
+//    /** */
+//    @Test
+//    public void testWorkDirectory1() {
+//        genericWorkDirectoryTest(true, false, false,
+//                USER_WORK_DIR);
+//    }
+//
+//    /** */
+//    @Test
+//    public void testWorkDirectory2() {
+//        genericWorkDirectoryTest(true, false, true,
+//                USER_WORK_DIR);
+//    }
+//
+//    /** */
+//    @Test
+//    public void testWorkDirectory3() {
+//        genericWorkDirectoryTest(true, true, false,
+//                USER_WORK_DIR);
+//    }
+//
+//    /** */
+//    @Test
+//    public void testWorkDirectory4() {
+//        genericWorkDirectoryTest(true, true, true,
+//                USER_WORK_DIR);
+//    }
+//
+//    /** */
+//    private void genericWorkDirectoryTest(boolean userWorkDirFlag, boolean userIgniteHomeFlag,
+//                                          boolean userDirPropFlag, String expWorkDir) {
+//        if (userDirPropFlag)
+//            System.setProperty("user.dir", USER_DIR_PROPERTY_VALUE);
+//        else
+//            System.clearProperty("user.dir");
+//
+//        String userWorkDir = "";
+//        if (userWorkDirFlag)
+//            userWorkDir = USER_WORK_DIR;
+//
+//        U.nullifyHomeDirectory();
+//        System.clearProperty(IgniteSystemProperties.IGNITE_HOME);
+//        String userIgniteHome = "";
+//        if (userIgniteHomeFlag)
+//            userIgniteHome = USER_IGNITE_HOME;
+//
+//        String actualWorkDir = null;
+//        try {
+//            actualWorkDir = IgniteUtils.workDirectory(userWorkDir, userIgniteHome);
+//        } catch (Throwable e) {
+//            e.printStackTrace();
+//        }
+//
+//        assert expWorkDir.equals(actualWorkDir) : "actualWorkDir: " + actualWorkDir + ", expectedWorkDir: " + expWorkDir;
+//
+//    }
+//
+//    /** */
+//    @Test
+//    public void nonAbsolutePathTest() {
+//        genericPathExceptionTest("nonAbsolutePathTestDirectory",
+//                "Work directory path must be absolute: nonAbsolutePathTestDirectory");
+//    }
 
     /** */
     @Test
-    public void testWorkDirectory2() {
-        genericWorkDirectoryTest(true, false, true,
-                USER_WORK_DIR);
-    }
-
-    /** */
-    @Test
-    public void testWorkDirectory3() {
-        genericWorkDirectoryTest(true, true, false,
-                USER_WORK_DIR);
-    }
-
-    /** */
-    @Test
-    public void testWorkDirectory4() {
-        genericWorkDirectoryTest(true, true, true,
-                USER_WORK_DIR);
-    }
-
-    /** */
-    private void genericWorkDirectoryTest(boolean userWorkDirFlag, boolean userIgniteHomeFlag,
-                                          boolean userDirPropFlag, String expWorkDir) {
-        if (userDirPropFlag)
-            System.setProperty("user.dir", USER_DIR_PROPERTY_VALUE);
-        else
-            System.clearProperty("user.dir");
-
-        String userWorkDir = "";
-        if (userWorkDirFlag)
-            userWorkDir = USER_WORK_DIR;
-
-        U.nullifyHomeDirectory();
-        System.clearProperty(IgniteSystemProperties.IGNITE_HOME);
-        String userIgniteHome = "";
-        if (userIgniteHomeFlag)
-            userIgniteHome = USER_IGNITE_HOME;
-
-        String actualWorkDir = null;
-        try {
-            actualWorkDir = IgniteUtils.workDirectory(userWorkDir, userIgniteHome);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        assert expWorkDir.equals(actualWorkDir) : "actualWorkDir: " + actualWorkDir + ", expectedWorkDir: " + expWorkDir;
-
-    }
-
-    /** */
-    @Test
-    public void nonAbsolutePathTest() {
-        genericPathExceptionTest("nonAbsolutePathTestDirectory",
-                "Work directory path must be absolute: nonAbsolutePathTestDirectory");
-    }
-
-    /** */
-    @Test
-    @Ignore("Test fail when run on TeamCity")
+//    @Ignore("Test fail when run on TeamCity")
     public void workDirCannotWriteTest() {
         String strDir = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
         File dir = new File(strDir);
@@ -147,7 +147,7 @@ public class IgniteUtilsWorkDirectoryTest {
 
     /***/
     @Test
-    @Ignore("Test fail when run on TeamCity")
+//    @Ignore("Test fail when run on TeamCity")
     public void workDirCannotReadTest() {
         String strDir = String.join(File.separator, USER_WORK_DIR, "CannotReadTestDirectory");
         File dir = new File(strDir);
@@ -166,7 +166,7 @@ public class IgniteUtilsWorkDirectoryTest {
 
     /** */
     @Test
-    @Ignore("Test fail when run on TeamCity")
+//    @Ignore("Test fail when run on TeamCity")
     public void workDirNotExistAndCannotBeCreatedTest() {
         String strDirParent = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
         File dirParent = new File(strDirParent);
