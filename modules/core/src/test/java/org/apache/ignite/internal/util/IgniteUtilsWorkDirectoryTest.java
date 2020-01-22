@@ -24,7 +24,10 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /** */
 public class IgniteUtilsWorkDirectoryTest {
@@ -137,7 +140,17 @@ public class IgniteUtilsWorkDirectoryTest {
             boolean deleted = deleteDirectory(dir);
             assert deleted : "cannot delete file";
         }
+
         dir.mkdirs();
+
+        System.out.println("output of command: chmod 444");
+        execiteCommand("chmod 444 " + strDir);
+
+//        File dir1 = new File(String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory", "newDir"));
+//        dir1.mkdirs();
+
+        System.out.println("output of command: ls -ld");
+        execiteCommand("ls -ld " + strDir);
 
         boolean perm = dir.setWritable(false, false);
         assert perm : "no permission";
@@ -145,46 +158,77 @@ public class IgniteUtilsWorkDirectoryTest {
         genericPathExceptionTest(strDir, "Cannot write to work directory: " + strDir);
     }
 
-    /***/
-    @Test
-//    @Ignore("Test fail when run on TeamCity")
-    public void workDirCannotReadTest() {
-        String strDir = String.join(File.separator, USER_WORK_DIR, "CannotReadTestDirectory");
-        File dir = new File(strDir);
-
-        if (dir.exists()) {
-            boolean deleted = deleteDirectory(dir);
-            assert deleted : "cannot delete file";
+    private static void execiteCommand(String command) {
+        Process proc = null;
+        try {
+            proc = Runtime.getRuntime().exec(command);
+        } catch (IOException e) {
+            X.println("chmod failed");
+            e.printStackTrace();
         }
-        dir.mkdirs();
 
-        boolean perm = dir.setReadable(false, false);
-        assert perm : "no permission";
+        BufferedReader stdInput = new BufferedReader(new
+                InputStreamReader(proc.getInputStream()));
+        BufferedReader stdError = new BufferedReader(new
+                InputStreamReader(proc.getErrorStream()));
 
-        genericPathExceptionTest(strDir, "Cannot read from work directory: " + strDir);
+        String s = null;
+        try {
+            System.out.println("stdInput:");
+            while ((s = stdInput.readLine()) != null) {
+                System.out.println(s);
+            }
+            System.out.println("stdError:");
+            while ((s = stdError.readLine()) != null) {
+                System.out.println(s);
+            }
+            System.out.println("end");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    /** */
-    @Test
-//    @Ignore("Test fail when run on TeamCity")
-    public void workDirNotExistAndCannotBeCreatedTest() {
-        String strDirParent = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
-        File dirParent = new File(strDirParent);
-
-        if (dirParent.exists()) {
-            boolean deleted = deleteDirectory(dirParent);
-            assert deleted : "cannot delete file";
-        }
-        dirParent.mkdirs();
-
-        boolean perm = dirParent.setWritable(false, false);
-        assert perm : "no permission";
-
-        String strDir = String.join(File.separator, strDirParent, "newDirectory");
-
-        genericPathExceptionTest(strDir,
-                "Work directory does not exist and cannot be created: " + strDir);
-    }
+//    /***/
+//    @Test
+////    @Ignore("Test fail when run on TeamCity")
+//    public void workDirCannotReadTest() {
+//        String strDir = String.join(File.separator, USER_WORK_DIR, "CannotReadTestDirectory");
+//        File dir = new File(strDir);
+//
+//        if (dir.exists()) {
+//            boolean deleted = deleteDirectory(dir);
+//            assert deleted : "cannot delete file";
+//        }
+//        dir.mkdirs();
+//
+//        boolean perm = dir.setReadable(false, false);
+//        assert perm : "no permission";
+//
+//        genericPathExceptionTest(strDir, "Cannot read from work directory: " + strDir);
+//    }
+//
+//    /** */
+//    @Test
+////    @Ignore("Test fail when run on TeamCity")
+//    public void workDirNotExistAndCannotBeCreatedTest() {
+//        String strDirParent = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
+//        File dirParent = new File(strDirParent);
+//
+//        if (dirParent.exists()) {
+//            boolean deleted = deleteDirectory(dirParent);
+//            assert deleted : "cannot delete file";
+//        }
+//        dirParent.mkdirs();
+//
+//        boolean perm = dirParent.setWritable(false, false);
+//        assert perm : "no permission";
+//
+//        String strDir = String.join(File.separator, strDirParent, "newDirectory");
+//
+//        genericPathExceptionTest(strDir,
+//                "Work directory does not exist and cannot be created: " + strDir);
+//    }
 
     /** */
     private void genericPathExceptionTest(String userWorkDir, String expMsg) {
