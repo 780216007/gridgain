@@ -143,17 +143,15 @@ public class IgniteUtilsWorkDirectoryTest {
 
         dir.mkdirs();
 
-        System.out.println("output of command: chmod 444");
         execiteCommand("chmod 444 " + strDir);
 
-        System.out.println("output of command: chattr +i");
         execiteCommand("chattr +i " + strDir);
 
 //        File dir1 = new File(String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory", "newDir"));
 //        dir1.mkdirs();
 
-        System.out.println("output of command: ls -ld");
         execiteCommand("ls -ld " + strDir);
+        execiteCommand("lsattr " + strDir);
 
 //        boolean perm = dir.setWritable(false, false);
 //        assert perm : "no permission";
@@ -173,6 +171,7 @@ public class IgniteUtilsWorkDirectoryTest {
     }
 
     private static void execiteCommand(String command) {
+        System.out.println("Exec: " + command);
         Process proc = null;
         try {
             proc = Runtime.getRuntime().exec(command);
