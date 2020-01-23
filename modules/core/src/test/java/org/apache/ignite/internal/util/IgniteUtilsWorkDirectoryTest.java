@@ -164,8 +164,8 @@ public class IgniteUtilsWorkDirectoryTest {
 
 //        System.out.println("subdirectory was created");
 
-        System.out.println("output of command on subdir: ls -ld");
-        execiteCommand("ls -ld " + String.join(File.separator, strDir, "newDir"));
+//        System.out.println("output of command on subdir: ls -ld");
+//        execiteCommand("ls -ld " + String.join(File.separator, strDir, "newDir"));
 
         genericPathExceptionTest(strDir, "Cannot write to work directory: " + strDir);
     }
@@ -221,27 +221,31 @@ public class IgniteUtilsWorkDirectoryTest {
 //        genericPathExceptionTest(strDir, "Cannot read from work directory: " + strDir);
 //    }
 //
-//    /** */
-//    @Test
-////    @Ignore("Test fail when run on TeamCity")
-//    public void workDirNotExistAndCannotBeCreatedTest() {
-//        String strDirParent = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
-//        File dirParent = new File(strDirParent);
-//
-//        if (dirParent.exists()) {
-//            boolean deleted = deleteDirectory(dirParent);
-//            assert deleted : "cannot delete file";
-//        }
-//        dirParent.mkdirs();
-//
-//        boolean perm = dirParent.setWritable(false, false);
-//        assert perm : "no permission";
-//
-//        String strDir = String.join(File.separator, strDirParent, "newDirectory");
-//
-//        genericPathExceptionTest(strDir,
-//                "Work directory does not exist and cannot be created: " + strDir);
-//    }
+    /** */
+    @Test
+//    @Ignore("Test fail when run on TeamCity")
+    public void workDirNotExistAndCannotBeCreatedTest() {
+        String strDirParent = String.join(File.separator, USER_WORK_DIR, "CannotWriteTestDirectory");
+        File dirParent = new File(strDirParent);
+
+        if (dirParent.exists()) {
+            boolean deleted = deleteDirectory(dirParent);
+            assert deleted : "cannot delete file";
+        }
+        dirParent.mkdirs();
+
+        boolean perm = dirParent.setWritable(false, false);
+        assert perm : "no permission";
+
+        execiteCommand("chmod 444 " + dirParent);
+
+        execiteCommand("chattr +i " + dirParent);
+
+        String strDir = String.join(File.separator, strDirParent, "newDirectory");
+
+        genericPathExceptionTest(strDir,
+                "Work directory does not exist and cannot be created: " + strDir);
+    }
 
     /** */
     private void genericPathExceptionTest(String userWorkDir, String expMsg) {
