@@ -137,6 +137,7 @@ public class IgniteUtilsWorkDirectoryTest {
         File dir = new File(strDir);
 
         if (dir.exists()) {
+            resetPermission(strDir);
             boolean deleted = deleteDirectory(dir);
             assert deleted : "cannot delete file";
         }
@@ -150,9 +151,14 @@ public class IgniteUtilsWorkDirectoryTest {
             genericPathExceptionTest(strDir, "Cannot write to work directory: " + strDir);
         }
         finally {
-            executeCommand("chmod 777 " + strDir);
-            executeCommand("chattr -i " + strDir);
+            resetPermission(strDir);
         }
+    }
+
+    private static void resetPermission(String dir) {
+        executeCommand("chattr -i " + dir);
+        executeCommand("chattr -a " + dir);
+        executeCommand("chmod 777 " + dir);
     }
 
     private static void executeCommand(String command) {
@@ -186,6 +192,7 @@ public class IgniteUtilsWorkDirectoryTest {
         File dir = new File(strDir);
 
         if (dir.exists()) {
+            resetPermission(strDir);
             boolean deleted = deleteDirectory(dir);
             assert deleted : "cannot delete file";
         }
@@ -198,8 +205,7 @@ public class IgniteUtilsWorkDirectoryTest {
             genericPathExceptionTest(strDir, "Cannot read from work directory: " + strDir);
         }
         finally {
-            executeCommand("chmod 777 " + strDir);
-            executeCommand("chattr -a " + strDir);
+            resetPermission(strDir);
         }
     }
 
@@ -211,6 +217,7 @@ public class IgniteUtilsWorkDirectoryTest {
         File dirParent = new File(strDirParent);
 
         if (dirParent.exists()) {
+            resetPermission(strDirParent);
             boolean deleted = deleteDirectory(dirParent);
             assert deleted : "cannot delete file";
         }
@@ -225,8 +232,7 @@ public class IgniteUtilsWorkDirectoryTest {
             genericPathExceptionTest(strDir,"Work directory does not exist and cannot be created: " + strDir);
         }
         finally {
-            executeCommand("chmod 777 " + strDirParent);
-            executeCommand("chattr -i " + strDirParent);
+            resetPermission(strDirParent);
         }
     }
 
