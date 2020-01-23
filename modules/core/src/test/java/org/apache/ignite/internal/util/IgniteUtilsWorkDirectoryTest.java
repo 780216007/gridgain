@@ -156,13 +156,13 @@ public class IgniteUtilsWorkDirectoryTest {
 //        boolean perm = dir.setWritable(false, false);
 //        assert perm : "no permission";
 
-        System.out.println("try to create subdirectory");
+//        System.out.println("try to create subdirectory");
 
-        File dir1 = new File(String.join(File.separator, strDir, "newDir"));
-        boolean newDirCreated = dir1.mkdirs();
-        assert newDirCreated : "subdirectory was not created";
+//        File dir1 = new File(String.join(File.separator, strDir, "newDir"));
+//        boolean newDirCreated = dir1.mkdirs();
+//        assert newDirCreated : "subdirectory was not created";
 
-        System.out.println("subdirectory was created");
+//        System.out.println("subdirectory was created");
 
         System.out.println("output of command on subdir: ls -ld");
         execiteCommand("ls -ld " + String.join(File.separator, strDir, "newDir"));
