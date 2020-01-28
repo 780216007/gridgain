@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
+import org.apache.ignite.cache.CacheKeyConfiguration;
 import org.apache.ignite.cache.QueryEntity;
 import org.apache.ignite.cache.QueryIndex;
 import org.apache.ignite.cache.affinity.AffinityKeyMapped;
@@ -226,6 +227,7 @@ public class BasicJavaTypesIndexTest extends AbstractIndexingCommonTest {
 
             IgniteCache<Object, Integer> cache = ign.createCache(
                 new CacheConfiguration<Object, Integer>(tblName + "_CACHE")
+                    .setKeyConfiguration(new CacheKeyConfiguration((keyCls != null ? keyCls : idxCls).getName(), "idxVal"))
                     .setQueryEntities(Collections.singletonList(qe)).setSqlSchema("PUBLIC"));
 
             // Then populate it with random data
