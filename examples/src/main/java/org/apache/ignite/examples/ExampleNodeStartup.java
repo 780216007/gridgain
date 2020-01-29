@@ -31,5 +31,6 @@ public class ExampleNodeStartup {
      */
     public static void main(String[] args) throws IgniteException {
         Ignition.start("examples/config/example-ignite.xml");
+        Ignition.ignite().cluster().active();
     }
 }

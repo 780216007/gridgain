@@ -111,6 +111,9 @@ public class ValidateIndexesClosure implements IgniteCallable<VisorValidateIndex
     /** If provided only each Kth element will be validated. */
     private final int checkThrough;
 
+    /** Check CRC */
+    private boolean checkCrc;
+
     /** Counter of processed partitions. */
     private final AtomicInteger processedPartitions = new AtomicInteger(0);
 
@@ -139,11 +142,13 @@ public class ValidateIndexesClosure implements IgniteCallable<VisorValidateIndex
      * @param cacheNames Cache names.
      * @param checkFirst If positive only first K elements will be validated.
      * @param checkThrough If positive only each Kth element will be validated.
+     *
      */
-    public ValidateIndexesClosure(Set<String> cacheNames, int checkFirst, int checkThrough) {
+    public ValidateIndexesClosure(Set<String> cacheNames, int checkFirst, int checkThrough, boolean checkCrc) {
         this.cacheNames = cacheNames;
         this.checkFirst = checkFirst;
         this.checkThrough = checkThrough;
+        this.checkCrc = checkCrc;
     }
 
     /** {@inheritDoc} */
@@ -315,7 +320,7 @@ public class ValidateIndexesClosure implements IgniteCallable<VisorValidateIndex
         try {
             AtomicBoolean cpFlag = new AtomicBoolean();
 
-            if (db instanceof GridCacheDatabaseSharedManager) {
+            if (checkCrc && db instanceof GridCacheDatabaseSharedManager) {
                 lsnr = new DbCheckpointListener() {
                     @Override public void onMarkCheckpointBegin(Context ctx) {
                         /* No-op. */
@@ -333,7 +338,7 @@ public class ValidateIndexesClosure implements IgniteCallable<VisorValidateIndex
 
                 ((GridCacheDatabaseSharedManager)db).addCheckpointListener(lsnr);
 
-                if (IdleVerifyUtility.isCheckpointNow(db))
+                if (checkCrc && IdleVerifyUtility.isCheckpointNow(db))
                     throw new GridNotIdleException(IdleVerifyUtility.CLUSTER_NOT_IDLE_MSG);
             }
 
@@ -390,7 +395,8 @@ public class ValidateIndexesClosure implements IgniteCallable<VisorValidateIndex
         try {
             FilePageStoreManager pageStoreMgr = (FilePageStoreManager)cctx.pageStore();
 
-            IdleVerifyUtility.checkPartitionsPageCrcSum(pageStoreMgr, gctx, INDEX_PARTITION, FLAG_IDX, cpFlag);
+            if (checkCrc)
+                IdleVerifyUtility.checkPartitionsPageCrcSum(pageStoreMgr, gctx, INDEX_PARTITION, FLAG_IDX, cpFlag);
 
             return null;
         }
@@ -654,7 +660,9 @@ public class ValidateIndexesClosure implements IgniteCallable<VisorValidateIndex
         boolean enoughIssues = false;
 
         Cursor cursor = null;
-
+        // TODO GG-27243
+        if (checkCrc)
+            log.info(idx.getName() + " checkCrc is true");
         try {
             cursor = idx.find((Session)null, null, null);
 

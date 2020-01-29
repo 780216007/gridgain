@@ -40,7 +40,7 @@ public class VisorIdleVerifyTaskArg extends VisorDataTransferObject {
 
     /** Exclude caches or groups. */
     private Set<String> excludeCaches;
-
+// TODO copy checkCrc to VisorValidateIndexesTaskArg
     /** Check CRC */
     private boolean checkCrc;
 
