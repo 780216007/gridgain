@@ -25,6 +25,7 @@ import org.apache.ignite.internal.util.typedef.X;
 import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.testframework.junits.common.GridCommonAbstractTest;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -85,6 +86,7 @@ public class IgniteUtilsWorkDirectoryTest {
      */
     @Test
     public void testWorkDirectory1() {
+        Assert.assertTrue("check1", false);
         executeGenericTest(true, false, false,
             USER_WORK_DIR);
     }
@@ -94,6 +96,7 @@ public class IgniteUtilsWorkDirectoryTest {
      */
     @Test
     public void testWorkDirectory2() {
+        Assert.fail("check2");
         executeGenericTest(true, false, true,
             USER_WORK_DIR);
     }
@@ -103,6 +106,7 @@ public class IgniteUtilsWorkDirectoryTest {
      */
     @Test
     public void testWorkDirectory3() {
+        Assert.assertEquals("check3", 1, 2);
         executeGenericTest(true, true, false,
             USER_WORK_DIR);
     }
