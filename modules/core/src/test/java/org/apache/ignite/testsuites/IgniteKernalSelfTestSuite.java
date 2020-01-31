@@ -64,47 +64,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    ClusterReadOnlyModeSelfTest.class,
-    ClusterReadOnlyModeNodeJoinTest.class,
-    GridGetOrStartSelfTest.class,
-    GridSameVmStartupSelfTest.class,
-    GridSpiExceptionSelfTest.class,
-    GridRuntimeExceptionSelfTest.class,
-    GridFailedInputParametersSelfTest.class,
-    GridNodeFilterSelfTest.class,
-    GridNodeVisorAttributesSelfTest.class,
-    GridDiscoverySelfTest.class,
-    GridCommunicationSelfTest.class,
-    GridEventStorageManagerSelfTest.class,
-    GridCommunicationSendMessageSelfTest.class,
-    GridCacheMessageSelfTest.class,
-    GridDeploymentManagerStopSelfTest.class,
-    GridManagerStopSelfTest.class,
-    GridDiscoveryManagerAttributesSelfTest.RegularDiscovery.class,
-    GridDiscoveryManagerAttributesSelfTest.ClientDiscovery.class,
-    GridDiscoveryManagerAliveCacheSelfTest.class,
-    GridDiscoveryEventSelfTest.class,
-    GridPortProcessorSelfTest.class,
-    GridHomePathSelfTest.class,
-    GridStartupWithUndefinedIgniteHomeSelfTest.class,
-    IgniteUtilsWorkDirectoryTest.class,
-    GridVersionSelfTest.class,
-    GridListenActorSelfTest.class,
-    GridNodeLocalSelfTest.class,
-    GridKernalConcurrentAccessStopSelfTest.class,
-    IgniteConcurrentEntryProcessorAccessStopTest.class,
-    GridUpdateNotifierSelfTest.class,
-    GridAddressResolverSelfTest.class,
-    BaselineAutoAdjustInMemoryTest.class,
-    BaselineAutoAdjustTest.class,
-    IgniteUpdateNotifierPerClusterSettingSelfTest.class,
-    GridLocalEventListenerSelfTest.class,
-    IgniteTopologyPrintFormatSelfTest.class,
-    IgniteConnectionConcurrentReserveAndRemoveTest.class,
-    LongJVMPauseDetectorTest.class,
-    ClusterMetricsSelfTest.class,
-    DeploymentRequestOfUnknownClassProcessingTest.class,
-    NodeWithFilterRestartTest.class
+    IgniteUtilsWorkDirectoryTest.class
 })
 public class IgniteKernalSelfTestSuite {
 }
