@@ -102,11 +102,6 @@ public class GridOsCacheDrManager implements GridCacheDrManager {
     }
 
     /** {@inheritDoc} */
-    @Override public boolean receiveEnabled() {
-        return false;
-    }
-
-    /** {@inheritDoc} */
     @Override public void onDisconnected(IgniteFuture reconnectFut) {
         // No-op.
     }

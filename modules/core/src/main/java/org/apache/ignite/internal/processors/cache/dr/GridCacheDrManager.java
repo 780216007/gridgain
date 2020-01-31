@@ -69,11 +69,6 @@ public interface GridCacheDrManager extends GridCacheManager {
     public boolean enabled();
 
     /**
-     * @return {@code True} if receives DR data.
-     */
-    public boolean receiveEnabled();
-
-    /**
      * In case some partition is evicted, we remove entries of this partition from backup queue.
      *
      * @param part Partition.

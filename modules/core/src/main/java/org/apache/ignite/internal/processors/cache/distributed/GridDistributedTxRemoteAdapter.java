@@ -565,7 +565,7 @@ public abstract class GridDistributedTxRemoteAdapter extends IgniteTxAdapter
                                     if (cached == null)
                                         txEntry.cached(cached = cacheCtx.cache().entryEx(txEntry.key(), topologyVersion()));
 
-                                    if (near() && cacheCtx.dr().receiveEnabled()) {
+                                    if (near() && cacheCtx.dr().enabled()) {
                                         cached.markObsolete(xidVer);
 
                                         break;

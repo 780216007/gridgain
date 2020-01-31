@@ -620,7 +620,7 @@ public abstract class IgniteTxLocalAdapter extends IgniteTxAdapter implements Ig
                             // Must try to evict near entries before committing from
                             // transaction manager to make sure locks are held.
                             if (!evictNearEntry(txEntry, false)) {
-                                if (cacheCtx.isNear() && cacheCtx.dr().receiveEnabled()) {
+                                if (cacheCtx.isNear() && cacheCtx.dr().enabled()) {
                                     cached.markObsolete(xidVer);
 
                                     break;

@@ -2009,7 +2009,7 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
 
         if (req.size() > 1 &&                    // Several keys ...
             writeThrough() && !req.skipStore() && // and store is enabled ...
-            !ctx.dr().receiveEnabled()            // and no DR.
+            !ctx.dr().enabled()            // and no DR.
             ) {
             // This method can only be used when there are no replicated entries in the batch.
             updateWithBatch(node,
@@ -2106,7 +2106,7 @@ public class GridDhtAtomicCache<K, V> extends GridDhtCacheAdapter<K, V> {
         final boolean sndPrevVal,
         final DhtAtomicUpdateResult dhtUpdRes
     ) throws GridCacheEntryRemovedException {
-        assert !ctx.dr().receiveEnabled(); // Cannot update in batches during DR due to possible conflicts.
+        assert !ctx.dr().enabled(); // Cannot update in batches during DR due to possible conflicts.
         assert !req.returnValue() || req.operation() == TRANSFORM; // Should not request return values for putAll.
 
         if (!F.isEmpty(req.filter()) && ctx.loadPreviousValue()) {
